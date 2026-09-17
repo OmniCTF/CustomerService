@@ -53,7 +53,7 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress-local-only
       WP_URL: "http://127.0.0.1:${WP_PORT:-8080}"
       ADMIN_USER: admin
-      ADMIN_PASSWORD: admin-local-only
+      ADMIN_PASSWORD: admin-local-only-hehetryguessme101@
       PLAYER_USER: customer
       PLAYER_PASSWORD: customer-local-only
     entrypoint: ["/bin/sh", "/bootstrap/bootstrap.sh"]
