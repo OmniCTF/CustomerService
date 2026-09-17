@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  db:
+    image: mariadb:11.4.5
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress-local-only
+      MARIADB_ROOT_PASSWORD: root-local-only
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  wordpress:
+    image: wordpress:6.7.2-php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:${WP_PORT:-8080}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress-local-only
+      CTF_FLAG: "${CTF_FLAG:-CTF{customer_area_path_escape}}"
+      WORDPRESS_CONFIG_EXTRA: |
+        define('DISALLOW_FILE_EDIT', true);
+        define('WP_DEBUG', false);
+    entrypoint: ["/usr/local/bin/lab-entrypoint.sh"]
+    command: ["apache2-foreground"]
+    volumes:
+      - wp_data:/var/www/html
+      - ./scripts/wordpress-entrypoint.sh:/usr/local/bin/lab-entrypoint.sh:ro
+
+  cli:
+    image: wordpress:cli-2.11.0-php8.2
+    depends_on:
+      - db
+      - wordpress
+    restart: "no"
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress-local-only
+      WP_URL: "http://127.0.0.1:${WP_PORT:-8080}"
+      ADMIN_USER: admin
+      ADMIN_PASSWORD: admin-local-only
+      PLAYER_USER: customer
+      PLAYER_PASSWORD: customer-local-only
+    entrypoint: ["/bin/sh", "/bootstrap/bootstrap.sh"]
+    volumes:
+      - wp_data:/var/www/html
+      - ./scripts:/bootstrap:ro
+      - ./challenge:/challenge:ro
+      - ./vendor:/vendor:ro
+
+volumes:
+  db_data:
+  wp_data:
