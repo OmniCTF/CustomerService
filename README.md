@@ -1,4 +1,5 @@
 # CVE-2026-3464: WP Customer Area 8.3.4 local lab
+# This is a SOURCELESS chall
 
 This repository is a self-contained, loopback-only WordPress research lab and small CTF challenge for the arbitrary-file-**read** impact of CVE-2026-3464. It intentionally does not implement the deletion variant.
 
